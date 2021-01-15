@@ -13,6 +13,8 @@ def compute_gradient(current_w, current_b, training_x, training_y):
 # step1 产生模拟数据 y = 2x + 30
 train_x = np.random.random(50)
 train_y = 3 * train_x + 15
+plt.scatter(train_x, train_y)
+plt.show()
 
 # step2 随机选取w,b初始值
 w = 0
@@ -26,6 +28,3 @@ for i in range(6000):
     w = w - learning_rate * w_gradient
     b = b - learning_rate * b_gradient
     print("w:{}  b:{}".format(w, b))
-
-plt.scatter(train_x, train_y)
-plt.show()
