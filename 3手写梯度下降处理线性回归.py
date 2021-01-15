@@ -27,4 +27,4 @@ for i in range(6000):
     # 梯度下降更新w, b
     w = w - learning_rate * w_gradient
     b = b - learning_rate * b_gradient
-    print("w:{}  b:{}".format(w, b))
+    print("loop: {}, w: {}, b: {}".format(i, w, b))
