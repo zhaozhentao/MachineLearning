@@ -17,7 +17,7 @@ def mse(w, b, training_x, training_y):
     return (error * error).sum() / N
 
 
-# step1 产生模拟数据 y = 2x + 30
+# step1 产生模拟数据 y = 3x + 15
 train_x = np.random.random(50)
 train_y = 3 * train_x + 15
 plt.scatter(train_x, train_y)
