@@ -10,7 +10,7 @@ def compute_gradient(current_w, current_b, training_x, training_y):
     return w_gradient, b_gradient
 
 
-# 计算均方差mean squared error  最小二乘法
+# 计算均方差mean square error  最小二乘法
 def mse(w, b, training_x, training_y):
     N = float(len(training_x))
     error = w * training_x + b - training_y
