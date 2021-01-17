@@ -1,3 +1,6 @@
 .idea
 py.iml
 2Classification/data
+2Classification/acc.png
+2Classification/loss.png
+2Classification/output_logistic.csv
