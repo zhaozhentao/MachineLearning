@@ -7,11 +7,14 @@ import dataset as d
 training_x = d.training_x
 training_y = d.training_y
 
+# step2 构建网络
 model = tf.keras.Sequential([
     tf.keras.layers.Dense(1, input_shape=training_x[0].shape, activation='sigmoid')
 ])
 
 model.compile(optimizer='adam', loss='binary_crossentropy')
+
+# step3 训练
 model.fit(training_x, training_y, epochs=3000)
 
 # 预测
