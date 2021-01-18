@@ -3,21 +3,21 @@ import tensorflow as tf
 
 import dataset as d
 
-# step1 产生模拟数据
+# step1 Sampling data
 training_x = d.training_x
 training_y = d.training_y
 
-# step2 构建网络
+# step2 Build Neural Network
 model = tf.keras.Sequential([
     tf.keras.layers.Dense(1, input_shape=training_x[0].shape, activation='sigmoid')
 ])
 
 model.compile(optimizer='adam', loss='binary_crossentropy')
 
-# step3 训练
+# step3 Training
 model.fit(training_x, training_y, epochs=3000)
 
-# 预测
+# Predict
 class1_sample = [1, 2]
 class2_sample = [35, 38]
 y = model.predict(np.array([class1_sample, class2_sample]))

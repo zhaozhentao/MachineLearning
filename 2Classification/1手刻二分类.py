@@ -19,27 +19,27 @@ def _gradient(X, Y_label, w, b):
     return w_grad, b_grad
 
 
-# step1 产生模拟数据
+# step1 Sampling data
 training_x = d.training_x
 training_y = d.training_y
 
-# step2 随机初始化weights & bias
+# step2 Initialization weights & bias
 dimension = training_x.shape[1]
 w = np.zeros((dimension,))
 b = np.zeros((1,))
 learning_rate = 0.01
 step = 1
 
-# step3 梯度下降训练
+# step3 Gradient descent
 for _ in range(6000):
     w_grad, b_grad = _gradient(training_x, training_y, w, b)
     w = w - learning_rate / np.sqrt(step) * w_grad
     b = b - learning_rate / np.sqrt(step) * b_grad
     step = step + 1
 
-# 预测
-# should be close to 0 belong class1
+# Predict
+# should be closer to 0, belongs to class1
 print(_f(np.array([[5, 5]]), w, b))
 
-# should be close to 1 belong class2
+# should be closer to 1, belongs to class2
 print(_f(np.array([[25, 25]]), w, b))
