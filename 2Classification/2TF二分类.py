@@ -1,11 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-import dataset as d
-
 # step1 Sampling data
-training_x = d.training_x
-training_y = d.training_y
+from dataset import training_x, training_y
 
 # step2 Build Neural Network
 model = tf.keras.Sequential([

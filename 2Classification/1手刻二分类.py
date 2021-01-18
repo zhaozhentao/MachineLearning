@@ -1,6 +1,7 @@
 import numpy as np
 
-import dataset as d
+# step1 Sampling data
+from dataset import training_x, training_y
 
 
 def _sigmoid(z):
@@ -18,10 +19,6 @@ def _gradient(X, Y_label, w, b):
     b_grad = -np.sum(pred_error)
     return w_grad, b_grad
 
-
-# step1 Sampling data
-training_x = d.training_x
-training_y = d.training_y
 
 # step2 Initialization weights & bias
 dimension = training_x.shape[1]
