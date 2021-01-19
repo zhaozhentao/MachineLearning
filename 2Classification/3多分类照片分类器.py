@@ -39,4 +39,3 @@ else:
     model.fit(x_train, train_y_one_hot_label, epochs=5)
     # 验证模型
     model.evaluate(x_test, test_y_one_hot_label, verbose=2)
-
