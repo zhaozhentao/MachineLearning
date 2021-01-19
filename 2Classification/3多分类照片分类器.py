@@ -13,14 +13,30 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(10, activation='softmax')
 ])
 
-# 顺序标记的label，使用sparse_categorical_crossentropy作为损失函数
-model.compile(
-    optimizer='adam',
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
+if False:
+    # 顺序标记的label，使用sparse_categorical_crossentropy作为损失函数
+    model.compile(
+        optimizer='adam',
+        loss='sparse_categorical_crossentropy',
+        metrics=['accuracy']
+    )
 
-model.fit(x_train, y_train, epochs=5)
+    model.fit(x_train, y_train, epochs=5)
 
-# 验证模型
-model.evaluate(x_test, y_test, verbose=2)
+    # 验证模型
+    model.evaluate(x_test, y_test, verbose=2)
+else:
+    train_y_one_hot_label = tf.keras.utils.to_categorical(y_train)
+    test_y_one_hot_label = tf.keras.utils.to_categorical(y_test)
+
+    # 独热编码label，使用categorical_crossentropy作为损失函数
+    model.compile(
+        optimizer='adam',
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    model.fit(x_train, train_y_one_hot_label, epochs=5)
+    # 验证模型
+    model.evaluate(x_test, test_y_one_hot_label, verbose=2)
+
