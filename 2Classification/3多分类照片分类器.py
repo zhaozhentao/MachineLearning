@@ -14,9 +14,11 @@ model = tf.keras.models.Sequential([
 ])
 
 # 顺序标记的label，使用sparse_categorical_crossentropy作为损失函数
-model.compile(optimizer='adam',
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+model.compile(
+    optimizer='adam',
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy']
+)
 
 model.fit(x_train, y_train, epochs=5)
 
