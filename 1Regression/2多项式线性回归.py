@@ -19,6 +19,10 @@ model = tf.keras.Sequential([
 ])
 
 model.compile(optimizer='adam', loss='mse')
+
+# 显示网络形态
+tf.keras.utils.plot_model(model, show_shapes=True)
+
 # 开始训练
 model.fit(x, y, epochs=5000)
 
