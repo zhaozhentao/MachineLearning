@@ -1,5 +1,5 @@
-import tensorflow as tf
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
 # 载入并准备好 MNIST 数据集。将样本从整数转换为浮点数
 mnist = tf.keras.datasets.mnist
@@ -18,6 +18,8 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(10, activation='softmax')
 ])
 
+tensorboard = tf.keras.callbacks.TensorBoard(log_dir='./log')
+
 if False:
     # 顺序标记的label，使用sparse_categorical_crossentropy作为损失函数
     model.compile(
@@ -26,7 +28,7 @@ if False:
         metrics=['accuracy']
     )
 
-    model.fit(x_train, y_train, epochs=5)
+    model.fit(x_train, y_train, epochs=5, callbacks=[tensorboard])
 
     # 验证模型
     model.evaluate(x_test, y_test, verbose=2)
@@ -41,6 +43,6 @@ else:
         metrics=['accuracy']
     )
 
-    model.fit(x_train, train_y_one_hot_label, epochs=5)
+    model.fit(x_train, train_y_one_hot_label, epochs=5, callbacks=[tensorboard])
     # 验证模型
     model.evaluate(x_test, test_y_one_hot_label, verbose=2)
