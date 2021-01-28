@@ -15,6 +15,7 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Flatten(input_shape=(28, 28)),
     tf.keras.layers.Dense(128, activation='relu'),
     tf.keras.layers.Dropout(0.2),
+    # 数据集有 10 个类, Dense 层需要 10 个输出及一个 softmax 激活函数
     tf.keras.layers.Dense(10, activation='softmax')
 ])
 

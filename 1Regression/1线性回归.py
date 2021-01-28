@@ -3,7 +3,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 # 随机创建100个x轴变量, 模拟生成有线性关系的数据
-x = np.random.random(50)
+x = np.random.random(50) * 10
 # 加入随机的噪声
 noise = np.random.rand(50, ) / 10
 # f(x) = 2x + 1
@@ -24,7 +24,7 @@ model.summary()
 model.fit(x, y, epochs=3000)
 
 # 用训练完的模型来预测
-valid_x = [0.9, 0.8, 0.7]
+valid_x = [9, 8, 7]
 predict_y = model.predict(valid_x)
 
 print(predict_y)
