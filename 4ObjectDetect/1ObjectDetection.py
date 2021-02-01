@@ -14,6 +14,7 @@ def load_and_preprocess_image(path):
     mask = tf.io.read_file(path + '/label.png')
     mask = tf.image.decode_jpeg(mask, channels=3)
     mask = tf.image.resize(mask, [128, 128])
+    # 3 通道降为 1 通道
     mask = tf.image.rgb_to_grayscale(mask)
     mask /= 38.0
 
