@@ -15,6 +15,8 @@ def load_and_preprocess_image(path):
     mask = tf.image.decode_jpeg(mask, channels=3)
     mask = tf.image.resize(mask, [128, 128])
     mask /= 255.0
+    mask = tf.image.rgb_to_grayscale(mask)
+
     return image, mask
 
 
@@ -81,6 +83,11 @@ all_image_paths = [str(path) for path in all_image_paths]
 path_ds = tf.data.Dataset.from_tensor_slices(all_image_paths)
 image_ds = path_ds.map(load_and_preprocess_image, num_parallel_calls=AUTOTUNE)
 
+BATCH_SIZE = 64
+BUFFER_SIZE = 1000
+train_dataset = image_ds.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
+
 for image, mask in image_ds.take(1):
     sample_image, sample_mask = image, mask
 
@@ -121,4 +128,6 @@ model.compile(
 
 show_predictions()
 
-model_history = model.fit(image_ds, epochs=100)
+model_history = model.fit(train_dataset, epochs=100)
+
+show_predictions()
