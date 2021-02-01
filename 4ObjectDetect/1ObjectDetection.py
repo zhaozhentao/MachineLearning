@@ -27,7 +27,7 @@ all_image_paths = [str(path) for path in all_image_paths]
 path_ds = tf.data.Dataset.from_tensor_slices(all_image_paths)
 image_ds = path_ds.map(load_and_preprocess_image, num_parallel_calls=AUTOTUNE)
 
-for n, image in enumerate(image_ds.take(1)):
-    plt.imshow(image[1])
+for image, mask in image_ds.take(1):
+    plt.imshow(mask)
 
 plt.show()
