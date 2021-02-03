@@ -65,7 +65,7 @@ def create_mask(pred_mask):
     return pred_mask[0]
 
 
-def show_predictions(dataset=None, num=1):
+def show_predictions(dataset=None, num=2):
     if dataset:
         for image, mask in dataset.take(num):
             pred_mask = model.predict(image)
@@ -76,7 +76,7 @@ def show_predictions(dataset=None, num=1):
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-data_root = pathlib.Path('/Users/zhaotao/Desktop/py/4ObjectDetect/data')
+data_root = pathlib.Path('/5ObjectDetect/data')
 
 all_image_paths = list(data_root.glob('*'))
 all_image_paths = [str(path) for path in all_image_paths]
@@ -89,7 +89,7 @@ BUFFER_SIZE = 1000
 train_dataset = image_ds.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
 train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
 
-for image, mask in image_ds.take(1):
+for image, mask in image_ds.take(2):
     sample_image, sample_mask = image, mask
 
 display([sample_image, sample_mask])
@@ -131,4 +131,4 @@ show_predictions()
 
 model_history = model.fit(train_dataset, epochs=100)
 
-show_predictions()
+show_predictions(train_dataset)
