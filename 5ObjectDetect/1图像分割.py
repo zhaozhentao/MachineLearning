@@ -74,18 +74,16 @@ def show_predictions(dataset=None, num=2):
         display([sample_image, sample_mask, create_mask(model.predict(sample_image[tf.newaxis, ...]))])
 
 
-data_root = pathlib.Path('./data')
-
-all_image_paths = [str(path) for path in data_root.glob('*')]
+batch_size = 64
+output_channels = 3
+all_image_paths = [str(path) for path in pathlib.Path('./data').glob('*')]
+image_count = len(all_image_paths)
+steps_per_epoch = tf.math.ceil(image_count / batch_size).numpy()
 
 image_ds = (
     tf.data.Dataset.from_tensor_slices(all_image_paths)
         .map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 )
-
-batch_size = 64
-image_count = len(all_image_paths)
-steps_per_epoch = tf.math.ceil(image_count / batch_size).numpy()
 
 train_dataset = (
     image_ds.cache()
@@ -100,7 +98,6 @@ for image, mask in image_ds.take(2):
 
 display([sample_image, sample_mask])
 
-OUTPUT_CHANNELS = 3
 
 base_model = tf.keras.applications.MobileNetV2(input_shape=[128, 128, 3], include_top=False)
 
@@ -126,7 +123,8 @@ up_stack = [
     pix2pix.upsample(64, 3),  # 32x32 -> 64x64
 ]
 
-model = unet_model(OUTPUT_CHANNELS)
+model = unet_model(output_channels)
+
 model.compile(
     optimizer='adam',
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
