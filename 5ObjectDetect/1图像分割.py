@@ -6,19 +6,19 @@ from tensorflow_examples.models.pix2pix import pix2pix
 
 
 def load_and_preprocess_image(path):
-    image = tf.io.read_file(path + '/img.png')
-    image = tf.image.decode_jpeg(image, channels=3)
-    image = tf.image.resize(image, [128, 128])
-    image /= 255.0
+    img = tf.io.read_file(path + '/img.png')
+    img = tf.image.decode_jpeg(img, channels=3)
+    img = tf.image.resize(img, [128, 128])
+    img /= 255.0
 
-    mask = tf.io.read_file(path + '/label.png')
-    mask = tf.image.decode_jpeg(mask, channels=3)
-    mask = tf.image.resize(mask, [128, 128])
+    label = tf.io.read_file(path + '/label.png')
+    label = tf.image.decode_jpeg(label, channels=3)
+    label = tf.image.resize(label, [128, 128])
     # 3 通道降为 1 通道
-    mask = tf.image.rgb_to_grayscale(mask)
-    mask /= 38.0
+    label = tf.image.rgb_to_grayscale(label)
+    label /= 38.0
 
-    return image, mask
+    return img, label
 
 
 def unet_model(output_channels):
