@@ -67,14 +67,12 @@ def create_mask(pred_mask):
 
 def show_predictions(dataset=None, num=2):
     if dataset:
-        for image, mask in dataset.take(num):
-            pred_mask = model.predict(image)
-            display([image[0], mask[0], create_mask(pred_mask)])
+        for img, mask in dataset.take(num):
+            pred_mask = model.predict(img)
+            display([img[0], mask[0], create_mask(pred_mask)])
     else:
         display([sample_image, sample_mask, create_mask(model.predict(sample_image[tf.newaxis, ...]))])
 
-
-AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 data_root = pathlib.Path('/5ObjectDetect/data')
 
@@ -82,12 +80,12 @@ all_image_paths = list(data_root.glob('*'))
 all_image_paths = [str(path) for path in all_image_paths]
 
 path_ds = tf.data.Dataset.from_tensor_slices(all_image_paths)
-image_ds = path_ds.map(load_and_preprocess_image, num_parallel_calls=AUTOTUNE)
+image_ds = path_ds.map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
 BATCH_SIZE = 64
 BUFFER_SIZE = 1000
 train_dataset = image_ds.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
-train_dataset = train_dataset.prefetch(buffer_size=AUTOTUNE)
+train_dataset = train_dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 
 for image, mask in image_ds.take(2):
     sample_image, sample_mask = image, mask
