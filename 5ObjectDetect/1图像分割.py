@@ -74,10 +74,9 @@ def show_predictions(dataset=None, num=2):
         display([sample_image, sample_mask, create_mask(model.predict(sample_image[tf.newaxis, ...]))])
 
 
-data_root = pathlib.Path('/5ObjectDetect/data')
+data_root = pathlib.Path('./data')
 
-all_image_paths = list(data_root.glob('*'))
-all_image_paths = [str(path) for path in all_image_paths]
+all_image_paths = [str(path) for path in data_root.glob('*')]
 
 path_ds = tf.data.Dataset.from_tensor_slices(all_image_paths)
 image_ds = path_ds.map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
