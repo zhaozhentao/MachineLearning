@@ -78,13 +78,22 @@ data_root = pathlib.Path('./data')
 
 all_image_paths = [str(path) for path in data_root.glob('*')]
 
-path_ds = tf.data.Dataset.from_tensor_slices(all_image_paths)
-image_ds = path_ds.map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+image_ds = (
+    tf.data.Dataset.from_tensor_slices(all_image_paths)
+        .map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+)
 
-BATCH_SIZE = 64
-BUFFER_SIZE = 1000
-train_dataset = image_ds.cache().shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
-train_dataset = train_dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+batch_size = 64
+image_count = len(all_image_paths)
+steps_per_epoch = tf.math.ceil(image_count / batch_size).numpy()
+
+train_dataset = (
+    image_ds.cache()
+        .shuffle(image_count)
+        .repeat()
+        .batch(batch_size)
+        .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+)
 
 for image, mask in image_ds.take(2):
     sample_image, sample_mask = image, mask
@@ -126,6 +135,6 @@ model.compile(
 
 show_predictions()
 
-model_history = model.fit(train_dataset, epochs=100)
+model_history = model.fit(train_dataset, epochs=100, steps_per_epoch=steps_per_epoch)
 
 show_predictions(train_dataset)
