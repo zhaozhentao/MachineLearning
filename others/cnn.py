@@ -14,44 +14,36 @@ char_dict = {
 }
 
 
-def load_and_preprocess_image(path, l0, l1, l2, l3, l4, l5, l6):
+def load_and_preprocess_image(path):
     img = tf.io.read_file(path + '/plate.jpeg')
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [240, 80])
     img /= 255.0
-    return img, l0, l1, l2, l3, l4, l5, l6
+    return img
 
 
 batch_size = 32
 all_image_paths = [str(path) for path in pathlib.Path('./dataset').glob('*/*')]
 image_count = len(all_image_paths)
-c0 = []
-c1 = []
-c2 = []
-c3 = []
-c4 = []
-c5 = []
-c6 = []
-for p in all_image_paths:
-    name = pathlib.Path(p).name
-    c0.append(char_dict[name[0]])
-    c1.append(char_dict[name[1]])
-    c2.append(char_dict[name[2]])
-    c3.append(char_dict[name[3]])
-    c4.append(char_dict[name[4]])
-    c5.append(char_dict[name[5]])
-    c6.append(char_dict[name[6]])
 
-print(c0)
+labels = []
+for p in all_image_paths:
+    label = [char_dict[c] for c in pathlib.Path(p).name[0:7]]
+    labels.append(label)
+
+labels = tf.data.Dataset.from_tensor_slices(labels)
 
 ds = (
-    tf.data.Dataset.from_tensor_slices((all_image_paths, c0, c1, c2, c3, c4, c5, c6))
+    tf.data.Dataset.from_tensor_slices((all_image_paths))
         .map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
         .cache()
+        .batch(batch_size)
         .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 )
 
-input = tf.keras.layers.Input((80, 240, 3))
+train_ds = tf.data.Dataset.zip((ds, labels))
+
+input = tf.keras.layers.Input((240, 80, 3))
 x = input
 x = tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), strides=1, padding='same', activation='relu')(x)
 x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same', strides=2)(x)
@@ -72,4 +64,4 @@ model.compile(
     metrics=['accuracy']
 )
 
-model.fit(ds)
+model.fit(train_ds)
