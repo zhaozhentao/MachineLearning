@@ -12,7 +12,7 @@ def locate(img_src, img_mask, dir_path):
     cont = max(contours, key=lambda item: cv2.boundingRect(item)[2])
 
     x, y, w, h = cv2.boundingRect(cont)  # 获取最小外接矩形
-    # img_cut_mask = img_mask[y:y + h, x:x + w]  # 将标签车牌区域截取出来
+
     if w > 15 and h > 15:
         rect = cv2.minAreaRect(cont)  # 针对坐标点获取带方向角的最小外接矩形，中心点坐标，宽高，旋转角度
         box = cv2.boxPoints(rect).astype(np.int32)  # 获取最小外接矩形四个顶点坐标
@@ -57,16 +57,16 @@ def locate(img_src, img_mask, dir_path):
             weight = 0.975
             if weight * d_up + (1 - weight) * dis0 < d0:
                 d0 = weight * d_up + (1 - weight) * dis0
-                l0 = (x, y)
+                l0 = (x - 20, y - 20)
             if weight * d_down + (1 - weight) * dis1 < d1:
                 d1 = weight * d_down + (1 - weight) * dis1
-                l1 = (x, y)
+                l1 = (x - 20, y + 20)
             if weight * d_up + (1 - weight) * dis2 < d2:
                 d2 = weight * d_up + (1 - weight) * dis2
-                l2 = (x, y)
+                l2 = (x + 20, y - 20)
             if weight * d_down + (1 - weight) * dis3 < d3:
                 d3 = weight * d_down + (1 - weight) * dis3
-                l3 = (x, y)
+                l3 = (x + 20, y + 20)
 
         p0 = np.float32([l0, l1, l2, l3])  # 左上角，左下角，右上角，右下角，形成的新box顺序需和原box中的顺序对应，以进行转换矩阵的形成
         p1 = np.float32([(0, 0), (0, 80), (240, 0), (240, 80)])
