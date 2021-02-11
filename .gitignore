@@ -6,3 +6,5 @@ py.iml
 2Classification/output_logistic.csv
 2Classification/log
 5ObjectDetect/data
+others/dataset
+others/dataset.zip
