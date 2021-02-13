@@ -1,89 +1,35 @@
 import pathlib
 
+import numpy as np
 import tensorflow as tf
 
-char_dict = {
-    "京": 0.01, "沪": 0.02, "津": 0.03, "渝": 0.04, "冀": 0.05, "晋": 0.06, "蒙": 0.07, "辽": 0.08,
-    "吉": 0.09, "黑": 0.10, "苏": 0.11, "浙": 0.12, "皖": 0.13, "闽": 0.14, "赣": 0.15, "鲁": 0.16,
-    "豫": 0.17, "鄂": 0.18, "湘": 0.19, "粤": 0.20, "桂": 0.21, "琼": 0.22, "川": 0.23, "贵": 0.24,
-    "云": 0.25, "藏": 0.26, "陕": 0.27, "甘": 0.28, "青": 0.29, "宁": 0.30, "新": 0.31,
-    "0": 0.32, "1": 0.33, "2": 0.34, "3": 0.35, "4": 0.36, "5": 0.37, "6": 0.38, "7": 0.39, "8": 0.40,
-    "9": 0.41, "A": 0.42, "B": 0.43, "C": 0.44, "D": 0.45, "E": 0.46, "F": 0.47, "G": 0.48, "H": 0.49,
-    "J": 0.50, "K": 0.51, "L": 0.52, "M": 0.53, "N": 0.54, "P": 0.55, "Q": 0.56, "R": 0.57, "S": 0.58,
-    "T": 0.59, "U": 0.60, "V": 0.61, "W": 0.62, "X": 0.63, "Y": 0.64, "Z": 0.65
-}
+char_dict = {"京": 0, "沪": 1, "津": 2, "渝": 3, "冀": 4, "晋": 5, "蒙": 6, "辽": 7, "吉": 8, "黑": 9, "苏": 10,
+             "浙": 11, "皖": 12, "闽": 13, "赣": 14, "鲁": 15, "豫": 16, "鄂": 17, "湘": 18, "粤": 19, "桂": 20,
+             "琼": 21, "川": 22, "贵": 23, "云": 24, "藏": 25, "陕": 26, "甘": 27, "青": 28, "宁": 29, "新": 30,
+             "0": 31, "1": 32, "2": 33, "3": 34, "4": 35, "5": 36, "6": 37, "7": 38, "8": 39, "9": 40,
+             "A": 41, "B": 42, "C": 43, "D": 44, "E": 45, "F": 46, "G": 47, "H": 48, "J": 49, "K": 50,
+             "L": 51, "M": 52, "N": 53, "P": 54, "Q": 55, "R": 56, "S": 57, "T": 58, "U": 59, "V": 60,
+             "W": 61, "X": 62, "Y": 63, "Z": 64}
 
+# 读取数据集
+all_image_path = [str(p) for p in pathlib.Path('./dataset').glob('*/*')]
 
-def load_and_preprocess_image(path):
+n = len(all_image_path)
+X_train, y_train = [], []
+for i in range(n):
+    path = all_image_path[i]
+    print('正在读取 {}'.format(all_image_path[i]))
     img = tf.io.read_file(path + '/plate.jpeg')
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [240, 80])
     img /= 255.0
-    return img
+    plate = pathlib.Path(path).name
+    label = [char_dict[name] for name in plate[0:7]]  # 图片名前7位为车牌标签
+    X_train.append(img)
+    y_train.append(label)
 
-
-batch_size = 32
-all_image_paths = [str(path) for path in pathlib.Path('./dataset').glob('*/*')]
-image_count = len(all_image_paths)
-
-labels = []
-for p in all_image_paths:
-    label = [char_dict[c] for c in pathlib.Path(p).name[0:7]]
-    labels.append(label)
-
-labels = tf.data.Dataset.from_tensor_slices(labels)
-
-l0 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[0]]
-    l0.append(label)
-l0 = tf.data.Dataset.from_tensor_slices(l0)
-
-l1 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[1]]
-    l1.append(label)
-l1 = tf.data.Dataset.from_tensor_slices(l1)
-
-l2 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[2]]
-    l2.append(label)
-l2 = tf.data.Dataset.from_tensor_slices(l2)
-
-l3 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[3]]
-    l3.append(label)
-l3 = tf.data.Dataset.from_tensor_slices(l3)
-
-l4 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[4]]
-    l4.append(label)
-l4 = tf.data.Dataset.from_tensor_slices(l4)
-
-l5 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[5]]
-    l5.append(label)
-l5 = tf.data.Dataset.from_tensor_slices(l5)
-
-l6 = []
-for p in all_image_paths:
-    label = char_dict[pathlib.Path(p).name[6]]
-    l6.append(label)
-l6 = tf.data.Dataset.from_tensor_slices(l6)
-
-ds = (
-    tf.data.Dataset.from_tensor_slices((all_image_paths))
-        .map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        .cache()
-        .batch(batch_size)
-        .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
-)
-
-train_ds = tf.data.Dataset.zip((ds, (l0, l1, l2, l3, l4, l5, l6)))
+X_train = np.array(X_train)
+y_train = [np.array(y_train)[:, i] for i in range(7)]
 
 input = tf.keras.layers.Input((240, 80, 3))
 x = input
@@ -106,4 +52,4 @@ model.compile(
     metrics=['accuracy']
 )
 
-model.fit(train_ds)
+model.fit(X_train, y_train, epochs=30)
