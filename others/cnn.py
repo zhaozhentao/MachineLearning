@@ -33,6 +33,48 @@ for p in all_image_paths:
 
 labels = tf.data.Dataset.from_tensor_slices(labels)
 
+l0 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[0]]
+    l0.append(label)
+l0 = tf.data.Dataset.from_tensor_slices(l0)
+
+l1 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[1]]
+    l1.append(label)
+l1 = tf.data.Dataset.from_tensor_slices(l1)
+
+l2 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[2]]
+    l2.append(label)
+l2 = tf.data.Dataset.from_tensor_slices(l2)
+
+l3 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[3]]
+    l3.append(label)
+l3 = tf.data.Dataset.from_tensor_slices(l3)
+
+l4 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[4]]
+    l4.append(label)
+l4 = tf.data.Dataset.from_tensor_slices(l4)
+
+l5 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[5]]
+    l5.append(label)
+l5 = tf.data.Dataset.from_tensor_slices(l5)
+
+l6 = []
+for p in all_image_paths:
+    label = char_dict[pathlib.Path(p).name[6]]
+    l6.append(label)
+l6 = tf.data.Dataset.from_tensor_slices(l6)
+
 ds = (
     tf.data.Dataset.from_tensor_slices((all_image_paths))
         .map(load_and_preprocess_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -41,7 +83,7 @@ ds = (
         .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 )
 
-train_ds = tf.data.Dataset.zip((ds, labels))
+train_ds = tf.data.Dataset.zip((ds, (l0, l1, l2, l3, l4, l5, l6)))
 
 input = tf.keras.layers.Input((240, 80, 3))
 x = input
