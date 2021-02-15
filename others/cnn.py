@@ -52,4 +52,4 @@ model.compile(
     metrics=['accuracy']
 )
 
-model.fit(X_train, y_train, epochs=30)
+model.fit(X_train, y_train, epochs=100)
