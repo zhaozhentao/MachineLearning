@@ -55,16 +55,16 @@ def locate(img_src, img_mask, dir_path):
             weight = 0.975
             if weight * d_up + (1 - weight) * dis0 < d0:
                 d0 = weight * d_up + (1 - weight) * dis0
-                l0 = (x - 20, y - 10)
+                l0 = (x - 4, y - 2)
             if weight * d_down + (1 - weight) * dis1 < d1:
                 d1 = weight * d_down + (1 - weight) * dis1
-                l1 = (x - 20, y + 10)
+                l1 = (x - 4, y + 2)
             if weight * d_up + (1 - weight) * dis2 < d2:
                 d2 = weight * d_up + (1 - weight) * dis2
-                l2 = (x + 20, y - 10)
+                l2 = (x + 4, y - 2)
             if weight * d_down + (1 - weight) * dis3 < d3:
                 d3 = weight * d_down + (1 - weight) * dis3
-                l3 = (x + 20, y + 10)
+                l3 = (x + 4, y + 2)
 
         p0 = np.float32([l0, l1, l2, l3])  # 左上角，左下角，右上角，右下角，形成的新box顺序需和原box中的顺序对应，以进行转换矩阵的形成
         p1 = np.float32([(0, 0), (0, 80), (240, 0), (240, 80)])
@@ -89,15 +89,11 @@ for dir_path in image_dirs:
     file_path = dir_path + '/img.png'
     image = tf.io.read_file(file_path)
     image = tf.image.decode_jpeg(image, channels=3)
-    image = tf.image.resize(image, [416, 416])
-    image /= 255.0
 
-    predict = model.predict(np.array([image]))
-    mask = create_mask(predict)
+    mask = tf.io.read_file(dir_path + '/label.png')
+    mask = tf.image.decode_jpeg(mask, channels=1)
 
-    image = tf.keras.preprocessing.image.array_to_img(image)
     image = np.asarray(image)
-    mask = tf.keras.preprocessing.image.array_to_img(mask)
     mask = np.asarray(mask)
 
     locate(image, mask, str(pathlib.Path(file_path).parent))
