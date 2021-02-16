@@ -75,12 +75,6 @@ def locate(img_src, img_mask, dir_path):
         tf.io.write_file(dir_path + '/plate.jpeg', tf.image.encode_jpeg(lic))
 
 
-def create_mask(pred_mask):
-    pred_mask = tf.argmax(pred_mask, axis=-1)
-    pred_mask = pred_mask[..., tf.newaxis]
-    return pred_mask[0]
-
-
 model = tf.keras.models.load_model('zc.h5')
 
 image_dirs = [str(path) for path in pathlib.Path('dataset').glob('*/*')]
