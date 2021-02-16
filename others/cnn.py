@@ -21,7 +21,7 @@ for i in range(n):
     print('正在读取 {}'.format(all_image_path[i]))
     img = tf.io.read_file(path + '/plate.jpeg')
     img = tf.image.decode_jpeg(img, channels=3)
-    img = tf.image.resize(img, [240, 80])
+    img = tf.image.resize(img, [80, 240])
     img /= 255.0
     plate = pathlib.Path(path).name
     label = [char_dict[name] for name in plate[0:7]]  # 图片名前7位为车牌标签
@@ -31,7 +31,7 @@ for i in range(n):
 X_train = np.array(X_train)
 y_train = [np.array(y_train)[:, i] for i in range(7)]
 
-input = tf.keras.layers.Input((240, 80, 3))
+input = tf.keras.layers.Input((80, 240, 3))
 x = input
 x = tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), strides=1, padding='same', activation='relu')(x)
 x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same', strides=2)(x)
