@@ -1,6 +1,5 @@
 import pathlib
 
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
@@ -23,6 +22,7 @@ recognition_model = tf.keras.models.load_model('plate.h5')
 
 np.random.shuffle(images_path)
 
+error_count = 0
 for p in images_path:
     img = tf.io.read_file(p + '/img.png')
     img = tf.image.decode_jpeg(img, channels=3)
@@ -37,12 +37,16 @@ for p in images_path:
     img = np.asarray(img)
 
     plate = locate(img, mask)
-    plt.imshow(plate)
     plate_chars = recognition_model.predict(np.array([plate]))
     plate = []
     for cs in plate_chars:
         plate.append(index_to_char[np.argmax(cs)])
-    print(''.join(plate))
-    break
 
-plt.show()
+    real_plate = pathlib.Path(p).name
+    predict_plate = ''.join(plate)
+
+    if predict_plate != real_plate:
+        print('wrong real plate is {}, predict plate is {}'.format(real_plate, predict_plate))
+        error_count += 1
+
+print('total error {}'.format(error_count))
