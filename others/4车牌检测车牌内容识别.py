@@ -23,7 +23,10 @@ recognition_model = tf.keras.models.load_model('plate.h5')
 np.random.shuffle(images_path)
 
 error_count = 0
+idx = 0
 for p in images_path:
+    print('idx {}'.format(idx))
+    idx += 1
     img = tf.io.read_file(p + '/img.png')
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [width, height])
