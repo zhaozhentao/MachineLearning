@@ -30,6 +30,7 @@ for p in images_path:
     img = tf.io.read_file(p + '/img.png')
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [width, height])
+    raw_img = img
     img = img / 255.0
 
     result = detect_model.predict(np.array([img]))
@@ -39,8 +40,8 @@ for p in images_path:
     mask = np.asarray(mask)
     img = np.asarray(img)
 
-    plate = locate(img, mask)
-    plate_chars = recognition_model.predict(np.array([plate]))
+    plate_image = locate(img, mask)
+    plate_chars = recognition_model.predict(np.array([plate_image]))
     plate = []
     for cs in plate_chars:
         plate.append(index_to_char[np.argmax(cs)])
@@ -51,5 +52,8 @@ for p in images_path:
     if predict_plate != real_plate:
         print('wrong real plate is {}, predict plate is {}'.format(real_plate, predict_plate))
         error_count += 1
+        raw_img = np.asarray(raw_img)
+        plate_image = locate(raw_img, mask)
+        tf.io.write_file('./dataset/error/' + real_plate + '/plate.jpeg', tf.image.encode_jpeg(plate_image))
 
 print('total error {}'.format(error_count))
