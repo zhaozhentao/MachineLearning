@@ -75,7 +75,7 @@ def show_predictions(dataset=None, num=2):
 
 
 batch_size = 64
-output_channels = 3
+output_channels = 1
 all_image_paths = [str(path) for path in pathlib.Path('./data').glob('*')]
 image_count = len(all_image_paths)
 steps_per_epoch = tf.math.ceil(image_count / batch_size).numpy()
@@ -127,12 +127,12 @@ model = unet_model(output_channels)
 
 model.compile(
     optimizer='adam',
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    loss='mse',
     metrics=['accuracy']
 )
 
 show_predictions()
 
-model_history = model.fit(train_dataset, epochs=100, steps_per_epoch=steps_per_epoch)
+model_history = model.fit(train_dataset, epochs=30, steps_per_epoch=steps_per_epoch)
 
 show_predictions(train_dataset)
