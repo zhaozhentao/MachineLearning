@@ -5,15 +5,6 @@ import tensorflow as tf
 
 from common import locate, create_mask, index_to_char
 
-
-def load_image(path):
-    image = tf.io.read_file(path + '/img.png')
-    image = tf.image.decode_jpeg(image, channels=3)
-    image = tf.image.resize(image, [width, height])
-    image /= 255.0
-    return image
-
-
 width = 416
 height = 416
 images_path = [str(p) for p in pathlib.Path('./dataset').glob('*/*')]
@@ -55,5 +46,3 @@ for p in images_path:
         raw_img = np.asarray(raw_img)
         plate_image = locate(raw_img, mask)
         tf.io.write_file('./dataset/error/' + real_plate + '/plate.jpeg', tf.image.encode_jpeg(plate_image))
-
-print('total error {}'.format(error_count))
