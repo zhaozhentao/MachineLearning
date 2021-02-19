@@ -2,6 +2,7 @@ import pathlib
 
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 
 from common import char_dict
 
@@ -10,6 +11,7 @@ all_image_path = [str(p) for p in pathlib.Path('./dataset').glob('*/*')]
 
 n = len(all_image_path)
 X_train, y_train = [], []
+idx = 0
 for i in range(n):
     path = all_image_path[i]
     print('正在读取 {}'.format(all_image_path[i]))
@@ -17,13 +19,20 @@ for i in range(n):
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [80, 240])
     img /= 255.0
+
     plate = pathlib.Path(path).name
-    label = [char_dict[name] for name in plate[0:7]]  # 图片名前7位为车牌标签
+    label = [char_dict[name] for name in plate[0:8]]  # 图片名前7位为车牌标签
+    if len(label) == 7:
+        label.append(65)
     X_train.append(img)
     y_train.append(label)
+    if idx == 0:
+        plt.imshow(img)
+        plt.show()
+        idx = 1
 
 X_train = np.array(X_train)
-y_train = [np.array(y_train)[:, i] for i in range(7)]
+y_train = [np.array(y_train)[:, i] for i in range(8)]
 
 input = tf.keras.layers.Input((80, 240, 3))
 x = input
@@ -33,10 +42,10 @@ for i in range(3):
     x = tf.keras.layers.Conv2D(filters=32 * 2 ** i, kernel_size=(3, 3), padding='valid', activation='relu')(x)
     x = tf.keras.layers.Conv2D(filters=32 * 2 ** i, kernel_size=(3, 3), padding='valid', activation='relu')(x)
     x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same', strides=2)(x)
-    x = tf.keras.layers.Dropout(0.5)(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
 x = tf.keras.layers.Flatten()(x)
-x = tf.keras.layers.Dropout(0.3)(x)
-Output = [tf.keras.layers.Dense(65, activation='softmax', name='c%d' % (i + 1))(x) for i in range(7)]
+x = tf.keras.layers.Dropout(0.2)(x)
+Output = [tf.keras.layers.Dense(66, activation='softmax', name='c%d' % (i + 1))(x) for i in range(8)]
 
 model = tf.keras.models.Model(inputs=input, outputs=Output)
 
@@ -46,4 +55,4 @@ model.compile(
     metrics=['accuracy']
 )
 
-model.fit(X_train, y_train, epochs=100)
+model.fit(X_train, y_train, epochs=50)
