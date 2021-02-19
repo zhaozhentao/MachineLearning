@@ -9,14 +9,11 @@ def load_and_preprocess_image(path):
     img = tf.io.read_file(path + '/img.png')
     img = tf.image.decode_jpeg(img, channels=3)
     img = tf.image.resize(img, [128, 128])
-    img /= 255.0
 
     label = tf.io.read_file(path + '/label.png')
-    label = tf.image.decode_jpeg(label, channels=3)
+    label = tf.image.decode_jpeg(label, channels=1)
     label = tf.image.resize(label, [128, 128])
-    # 3 通道降为 1 通道
-    label = tf.image.rgb_to_grayscale(label)
-    label /= 38.0
+    label = label / 255.0
 
     return img, label
 
@@ -93,11 +90,10 @@ train_dataset = (
         .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 )
 
-for image, mask in image_ds.take(2):
+for image, mask in image_ds.take(1):
     sample_image, sample_mask = image, mask
 
 display([sample_image, sample_mask])
-
 
 base_model = tf.keras.applications.MobileNetV2(input_shape=[128, 128, 3], include_top=False)
 
