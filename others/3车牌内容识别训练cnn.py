@@ -1,41 +1,60 @@
 import pathlib
 
-import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
 from common import char_dict
 
+
+def load_and_process_image(image_path, l0, l1, l2, l3, l4, l5, l6, l7):
+    image = tf.io.read_file(image_path + '/plate.jpeg')
+    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.image.resize(image, [80, 240])
+    image /= 255.0
+    return image, (l0, l1, l2, l3, l4, l5, l6, l7)
+
+
 # 读取数据集
-all_image_path = [str(p) for p in pathlib.Path('./dataset').glob('*/*')]
+all_image_path = [str(p) for p in pathlib.Path('./dataset/labeled').glob('*/*')]
+batch_size = 64
+image_count = len(all_image_path)
+label0, label1, label2, label3, label4, label5, label6, label7 = [], [], [], [], [], [], [], []
 
-n = len(all_image_path)
-X_train, y_train = [], []
-idx = 0
-for i in range(n):
-    path = all_image_path[i]
-    print('正在读取 {}'.format(all_image_path[i]))
-    img = tf.io.read_file(path + '/plate.jpeg')
-    img = tf.image.decode_jpeg(img, channels=3)
-    img = tf.image.resize(img, [80, 240])
-    img /= 255.0
+for p in all_image_path:
+    print('正在读取 {}'.format(p))
+    plate = pathlib.Path(p).name
+    label0.append(char_dict[plate[0]])
+    label1.append(char_dict[plate[1]])
+    label2.append(char_dict[plate[2]])
+    label3.append(char_dict[plate[3]])
+    label4.append(char_dict[plate[4]])
+    label5.append(char_dict[plate[5]])
+    label6.append(char_dict[plate[6]])
+    if len(plate) == 7:
+        label7.append(65)
+    else:
+        label7.append(char_dict[plate[7]])
 
-    plate = pathlib.Path(path).name
-    label = [char_dict[name] for name in plate[0:8]]  # 图片名前7位为车牌标签
-    if len(label) == 7:
-        label.append(65)
-    X_train.append(img)
-    y_train.append(label)
-    if idx == 0:
-        plt.imshow(img)
-        plt.show()
-        idx = 1
+image_path_ds = tf.data.Dataset.from_tensor_slices(all_image_path)
+label0 = tf.data.Dataset.from_tensor_slices(label0)
+label1 = tf.data.Dataset.from_tensor_slices(label1)
+label2 = tf.data.Dataset.from_tensor_slices(label2)
+label3 = tf.data.Dataset.from_tensor_slices(label3)
+label4 = tf.data.Dataset.from_tensor_slices(label4)
+label5 = tf.data.Dataset.from_tensor_slices(label5)
+label6 = tf.data.Dataset.from_tensor_slices(label6)
+label7 = tf.data.Dataset.from_tensor_slices(label7)
 
-X_train = np.array(X_train)
-y_train = [np.array(y_train)[:, i] for i in range(8)]
+ds = (
+    tf.data.Dataset.zip((image_path_ds, label0, label1, label2, label3, label4, label5, label6, label7))
+        .map(load_and_process_image)
+        .cache()
+        .shuffle(buffer_size=image_count)
+        .batch(batch_size)
+        .prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
+)
 
-input = tf.keras.layers.Input((80, 240, 3))
-x = input
+input_layer = tf.keras.layers.Input((80, 240, 3))
+x = input_layer
 x = tf.keras.layers.Conv2D(filters=16, kernel_size=(3, 3), strides=1, padding='same', activation='relu')(x)
 x = tf.keras.layers.MaxPool2D(pool_size=(2, 2), padding='same', strides=2)(x)
 for i in range(3):
@@ -45,14 +64,10 @@ for i in range(3):
     x = tf.keras.layers.Dropout(0.2)(x)
 x = tf.keras.layers.Flatten()(x)
 x = tf.keras.layers.Dropout(0.2)(x)
-Output = [tf.keras.layers.Dense(66, activation='softmax', name='c%d' % (i + 1))(x) for i in range(8)]
+output_layer = [tf.keras.layers.Dense(66, activation='softmax', name='c%d' % (i + 1))(x) for i in range(8)]
 
-model = tf.keras.models.Model(inputs=input, outputs=Output)
+model = tf.keras.models.Model(inputs=input_layer, outputs=output_layer)
 
-model.compile(
-    optimizer='adam',
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-model.fit(X_train, y_train, epochs=50)
+model.fit(ds, epochs=50)
