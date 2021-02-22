@@ -9,3 +9,4 @@ py.iml
 others/dataset
 others/dataset.zip
 *.h5
+*.png
