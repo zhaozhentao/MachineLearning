@@ -19,8 +19,9 @@ for i in range(8):
     for c in np.unique(chars[i]):
         character_times[i].append({'character': c, 'count': chars[i].count(c)})
 
-for items in character_times:
+for i, items in enumerate(character_times):
     labels = [item['character'] for item in items]
     counts = [item['count'] for item in items]
+    plt.title('第{}位'.format(i))
     plt.bar(range(len(counts)), counts, tick_label=labels)
     plt.show()
