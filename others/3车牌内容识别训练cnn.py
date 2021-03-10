@@ -2,7 +2,7 @@ import pathlib
 
 import tensorflow as tf
 
-from common import char_dict, index_to_chinese, index_to_char, chinese
+from common import char_dict, index_to_chinese, index_to_char, chinese, index_to_letter, letter
 
 
 def load_and_process_image(image_path, l0, l1, l2, l3, l4, l5, l6, l7):
@@ -24,6 +24,8 @@ for p in all_image_path:
     for i in range(7):
         if i == 0:
             label[i].append(chinese[plate[i]])
+        elif i == 1:
+            label[i].append(letter[plate[i]])
         else:
             label[i].append(char_dict[plate[i]])
     # 新能源有8位，普通车牌7位
@@ -52,10 +54,15 @@ for i in range(3):
     x = tf.keras.layers.Dropout(0.2)(x)
 x = tf.keras.layers.Flatten()(x)
 x = tf.keras.layers.Dropout(0.2)(x)
-output_layer = [tf.keras.layers.Dense(len(index_to_chinese), activation='softmax', name='c0')(x)]
 
-for i in range(7):
-    output_layer.append(tf.keras.layers.Dense(len(index_to_char), activation='softmax', name='c%d' % (i + 1))(x))
+# 省份, 城市字母
+output_layer = [
+    tf.keras.layers.Dense(len(index_to_chinese), activation='softmax', name='c0')(x),
+    tf.keras.layers.Dense(len(index_to_letter), activation='softmax', name='c1')(x)
+]
+
+for i in range(6):
+    output_layer.append(tf.keras.layers.Dense(len(index_to_char), activation='softmax', name='c%d' % (i + 2))(x))
 
 model = tf.keras.models.Model(inputs=input_layer, outputs=output_layer)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
