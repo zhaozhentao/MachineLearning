@@ -3,6 +3,7 @@ import pathlib
 
 import numpy as np
 import tensorflow as tf
+from PIL import Image
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.layers import GRU
@@ -46,10 +47,12 @@ class TextImageGenerator(tf.keras.callbacks.Callback):
             label_length = np.zeros([self.batch, 1])
 
             for idx in range(self.batch):
-                img = tf.io.read_file('images/' + self.paths[idx] + '/plate.jpeg')
-                img = tf.image.decode_jpeg(img, channels=1)
-                X_data[idx] = img
-                label = [self.char_dict[c] for c in self.paths[idx]]
+                # img = tf.io.read_file('images/' + self.paths[0] + '/plate.jpeg')
+                # img = tf.image.decode_jpeg(img, channels=1)
+                img = Image.open('images/' + self.paths[0] + '/plate.jpeg').convert('L')
+                img = np.array(img, 'f') / 255.0 - 0.5
+                X_data[idx] = np.reshape(img, (80, 240, 1))
+                label = [self.char_dict[c] for c in self.paths[0]]
                 labels[idx, :len(label)] = label
                 label_length[idx] = len(label)
                 input_length[idx] = self.img_w // self.downsample_factor - 2
@@ -79,10 +82,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
     rnn_size = 512
     minibatch_size = 16  # modify
 
-    if K.image_data_format() == 'channels_first':
-        input_shape = (1, img_w, img_h)
-    else:
-        input_shape = (img_w, img_h, 1)
+    input_shape = (img_w, img_h, 1)
 
     img_gen = TextImageGenerator()
     act = 'relu'
@@ -142,15 +142,18 @@ def train(run_name, start_epoch, stop_epoch, img_w):
     model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
 
     # the loss calc occurs elsewhere, so use a dummy lambda func for the loss
-    model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
+    model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd, metrics=['accuracy'])
 
     model.fit_generator(
         generator=img_gen.next_train(),
-        steps_per_epoch=(words_per_epoch - val_words) // minibatch_size,
+        steps_per_epoch=20,
+        validation_data=img_gen.next_train(),
+        validation_steps=val_words // minibatch_size,
         epochs=stop_epoch
     )
 
 
 if __name__ == '__main__':
     run_name = datetime.datetime.now().strftime('%Y:%m:%d:%H:%M:%S')
-    train(run_name, 0, 20, 240)
+
+    train(run_name, 0, 40, 240)
