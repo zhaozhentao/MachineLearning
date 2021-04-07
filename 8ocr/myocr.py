@@ -3,7 +3,6 @@ import pathlib
 
 import numpy as np
 import tensorflow as tf
-from PIL import Image
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
 from tensorflow.keras.layers import GRU
@@ -47,11 +46,9 @@ class TextImageGenerator(tf.keras.callbacks.Callback):
             label_length = np.zeros([self.batch, 1])
 
             for idx in range(self.batch):
-                # img = tf.io.read_file('images/' + self.paths[0] + '/plate.jpeg')
-                # img = tf.image.decode_jpeg(img, channels=1)
-                img = Image.open('images/' + self.paths[0] + '/plate.jpeg').convert('L')
-                img = np.array(img, 'f') / 255.0 - 0.5
-                X_data[idx] = np.reshape(img, (80, 240, 1))
+                img = tf.io.read_file('images/' + self.paths[0] + '/plate.jpeg')
+                img = tf.image.decode_jpeg(img, channels=1)
+                X_data[idx] = img
                 label = [self.char_dict[c] for c in self.paths[0]]
                 labels[idx, :len(label)] = label
                 label_length[idx] = len(label)
