@@ -241,7 +241,7 @@ class TextImageGenerator(tf.keras.callbacks.Callback):
         labels = np.ones([size, self.absolute_max_string_len])
         input_length = np.zeros([size, 1])
         label_length = np.zeros([size, 1])
-        source_str = []
+        source_str = np.array([])
         for i in range(size):
             # Mix in some blank inputs.  This seems to be important for
             # achieving translational invariance
@@ -253,7 +253,7 @@ class TextImageGenerator(tf.keras.callbacks.Callback):
                 labels[i, 0] = self.blank_label
                 input_length[i] = self.img_w // self.downsample_factor - 2
                 label_length[i] = 1
-                source_str.append('')
+                source_str = np.append(source_str, '')
             else:
                 if K.image_data_format() == 'channels_first':
                     X_data[i, 0, 0:self.img_w, :] = (
@@ -264,12 +264,12 @@ class TextImageGenerator(tf.keras.callbacks.Callback):
                 labels[i, :] = self.Y_data[index + i]
                 input_length[i] = self.img_w // self.downsample_factor - 2
                 label_length[i] = self.Y_len[index + i]
-                source_str.append(self.X_text[index + i])
+                source_str = np.append(source_str, self.X_text[index + i])
         inputs = {'the_input': X_data,
                   'the_labels': labels,
                   'input_length': input_length,
                   'label_length': label_length,
-                  # 'source_str': source_str  # used for visualization only
+                  'source_str': source_str  # used for visualization only
                   }
         outputs = {'ctc': np.zeros([size])}  # dummy data for dummy loss function
         return inputs, outputs
@@ -494,13 +494,13 @@ def train(run_name, start_epoch, stop_epoch, img_w):
 
     viz_cb = VizCallback(run_name, test_func, img_gen.next_val())
 
-    model.fit_generator(
-        generator=img_gen.next_train(),
+    model.fit(
+        img_gen.next_train(),
         steps_per_epoch=(words_per_epoch - val_words) // minibatch_size,
         epochs=stop_epoch,
         validation_data=img_gen.next_val(),
         validation_steps=val_words // minibatch_size,
-        callbacks=[img_gen],
+        callbacks=[viz_cb, img_gen],
         initial_epoch=start_epoch)
 
 
