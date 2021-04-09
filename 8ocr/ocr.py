@@ -1,25 +1,25 @@
-import os
-import itertools
 import codecs
-import re
 import datetime
+import itertools
+import os
+import re
+
 import cairocffi as cairo
 import editdistance
 import numpy as np
-from scipy import ndimage
 import pylab
+import tensorflow as tf
+from scipy import ndimage
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
+from tensorflow.keras.layers import GRU
 from tensorflow.keras.layers import Input, Dense, Activation
 from tensorflow.keras.layers import Reshape, Lambda
 from tensorflow.keras.layers import add, concatenate
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import GRU
 from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.utils import get_file
 from tensorflow.keras.preprocessing import image
-import tensorflow.keras.callbacks
-
+from tensorflow.keras.utils import get_file
 
 OUTPUT_DIR = 'image_ocr'
 
@@ -151,7 +151,7 @@ def is_valid_str(in_str):
 # data. Image renderings and text are created on the fly
 # each time with random perturbations
 
-class TextImageGenerator(tensorflow.keras.callbacks.Callback):
+class TextImageGenerator(tf.keras.callbacks.Callback):
 
     def __init__(self, monogram_file, bigram_file, minibatch_size,
                  img_w, img_h, downsample_factor, val_split,
@@ -166,6 +166,10 @@ class TextImageGenerator(tensorflow.keras.callbacks.Callback):
         self.val_split = val_split
         self.blank_label = self.get_output_size() - 1
         self.absolute_max_string_len = absolute_max_string_len
+        self.build_word_list(16000, 4, 1)
+        self.paint_func = lambda text: paint_text(
+            text, self.img_w, self.img_h,
+            rotate=False, ud=False, multi_fonts=False)
 
     def get_output_size(self):
         return len(alphabet) + 1
@@ -245,7 +249,7 @@ class TextImageGenerator(tensorflow.keras.callbacks.Callback):
                 if K.image_data_format() == 'channels_first':
                     X_data[i, 0, 0:self.img_w, :] = self.paint_func('')[0, :, :].T
                 else:
-                    X_data[i, 0:self.img_w, :, 0] = self.paint_func('',)[0, :, :].T
+                    X_data[i, 0:self.img_w, :, 0] = self.paint_func('', )[0, :, :].T
                 labels[i, 0] = self.blank_label
                 input_length[i] = self.img_w // self.downsample_factor - 2
                 label_length[i] = 1
@@ -265,10 +269,10 @@ class TextImageGenerator(tensorflow.keras.callbacks.Callback):
                   'the_labels': labels,
                   'input_length': input_length,
                   'label_length': label_length,
-                  'source_str': source_str  # used for visualization only
+                  # 'source_str': source_str  # used for visualization only
                   }
         outputs = {'ctc': np.zeros([size])}  # dummy data for dummy loss function
-        return (inputs, outputs)
+        return inputs, outputs
 
     def next_train(self):
         while 1:
@@ -291,10 +295,7 @@ class TextImageGenerator(tensorflow.keras.callbacks.Callback):
             yield ret
 
     def on_train_begin(self, logs={}):
-        self.build_word_list(16000, 4, 1)
-        self.paint_func = lambda text: paint_text(
-            text, self.img_w, self.img_h,
-            rotate=False, ud=False, multi_fonts=False)
+        pass
 
     def on_epoch_begin(self, epoch, logs={}):
         # rebind the paint function to implement curriculum learning
@@ -339,7 +340,7 @@ def decode_batch(test_func, word_batch):
     return ret
 
 
-class VizCallback(tensorflow.keras.callbacks.Callback):
+class VizCallback(tf.keras.callbacks.Callback):
 
     def __init__(self, run_name, test_func, text_img_gen, num_display_words=6):
         self.test_func = test_func
@@ -418,10 +419,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
     else:
         input_shape = (img_w, img_h, 1)
 
-    fdir = os.path.dirname(
-        get_file('wordlists.tgz',
-                 origin='http://www.mythic-ai.com/datasets/wordlists.tgz',
-                 untar=True))
+    fdir = '.'
 
     img_gen = TextImageGenerator(
         monogram_file=os.path.join(fdir, 'wordlist_mono_clean.txt'),
@@ -485,7 +483,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
                   outputs=loss_out)
 
     # the loss calc occurs elsewhere, so use a dummy lambda func for the loss
-    model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
+    model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd, metrics=['accuracy'])
     if start_epoch > 0:
         weight_file = os.path.join(
             OUTPUT_DIR,
@@ -502,7 +500,7 @@ def train(run_name, start_epoch, stop_epoch, img_w):
         epochs=stop_epoch,
         validation_data=img_gen.next_val(),
         validation_steps=val_words // minibatch_size,
-        callbacks=[viz_cb, img_gen],
+        callbacks=[img_gen],
         initial_epoch=start_epoch)
 
 
