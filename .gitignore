@@ -13,3 +13,5 @@ others/dataset.zip
 *.jpeg
 *.jpg
 8ocr/images
+9plate/labeled
+9plate/plates
